@@ -19,6 +19,8 @@ export const createLog = asyncHandler(async (req, res) => {
   }
 
   const log = await logQueries.createLog({ message, level, source, metadata });
+
+  
   classifyLog(log).then(async (aiResult) => {
     await logQueries.updateLog(log.id, {
       status: aiResult.status,
