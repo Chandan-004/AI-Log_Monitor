@@ -18,3 +18,5 @@ router.patch("/:id", verifyToken, updateLog);
 router.delete("/:id", verifyToken, deleteLog);
 
 export default router;
+
+
