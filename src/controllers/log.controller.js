@@ -7,10 +7,12 @@ import { sendAlert } from "../services/alert.services.js";
 
 
 export const createLog = asyncHandler(async (req, res) => {
-  const { userId, message, level, source = null, metadata = {} } = req.body;
+  // Get logged-in userId from JWT
+  const userId = req.user?.id; 
+  const { message, level, source = null, metadata = {} } = req.body;
 
-  if (!message || !level || !userId) {
-    throw new ApiError(400, "Message, Level, and userId are required");
+  if (!message || !level) {
+    throw new ApiError(400, "Message and Level are required");
   }
 
   const allowedLevels = ["info", "warning", "error", "critical"];
@@ -20,7 +22,7 @@ export const createLog = asyncHandler(async (req, res) => {
 
   // Step 1: Insert initial log
   const log = await logQueries.createLog({
-    userId,
+    userId, // from JWT
     message,
     level,
     source,
@@ -31,11 +33,12 @@ export const createLog = asyncHandler(async (req, res) => {
     // Step 2: Analyze log using AI
     const aiResult = await analyzeLog(message);
 
-    // Step 3: Update log with AI results
+    // Step 3: Update log with AI results safely
     await logQueries.updateLog(log.id, {
       category: aiResult.category,
       severity: aiResult.severity,
       alert_triggered: aiResult.severity >= 7,
+      metadata: { ...metadata, ...aiResult.metadata } // never null
     });
 
     // Step 4: Trigger alert if necessary
@@ -46,7 +49,6 @@ export const createLog = asyncHandler(async (req, res) => {
     console.error("AI analysis failed:", err);
   }
 
-  
   res.status(201).json(new ApiResponse(201, log, "Log created successfully"));
 });
 
