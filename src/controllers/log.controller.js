@@ -2,15 +2,15 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import * as logQueries from "../queries/log.queries.js";
-import { classifyLog } from "../services/ai.service.js";
-import { sendAlert } from "../services/alert.service.js";
+import { analyzeLog } from "../services/ai.services.js";
+import { sendAlert } from "../services/alert.services.js";
 
 
 export const createLog = asyncHandler(async (req, res) => {
-  const { message, level, source = null, metadata = {} } = req.body;
+  const { userId, message, level, source = null, metadata = {} } = req.body;
 
-  if (!message || !level) {
-    throw new ApiError(400, "Message and Level are required");
+  if (!message || !level || !userId) {
+    throw new ApiError(400, "Message, Level, and userId are required");
   }
 
   const allowedLevels = ["info", "warning", "error", "critical"];
@@ -18,25 +18,36 @@ export const createLog = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid log level");
   }
 
-  const log = await logQueries.createLog({ message, level, source, metadata });
-
-  
-  classifyLog(log).then(async (aiResult) => {
-    await logQueries.updateLog(log.id, {
-      status: aiResult.status,
-      metadata: { ...log.metadata, ai: aiResult },
-    });
-    if (aiResult.status === "critical" || level === "critical") {
-      await sendAlert(log);
-    }
-  }).catch(err => {
-    console.error("AI hook failed:", err);
+  // Step 1: Insert initial log
+  const log = await logQueries.createLog({
+    userId,
+    message,
+    level,
+    source,
+    metadata
   });
 
+  try {
+    // Step 2: Analyze log using AI
+    const aiResult = await analyzeLog(message);
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, log, "Log created successfully"));
+    // Step 3: Update log with AI results
+    await logQueries.updateLog(log.id, {
+      category: aiResult.category,
+      severity: aiResult.severity,
+      alert_triggered: aiResult.severity >= 7,
+    });
+
+    // Step 4: Trigger alert if necessary
+    if (aiResult.severity >= 7 || level === "critical") {
+      await sendAlert(log);
+    }
+  } catch (err) {
+    console.error("AI analysis failed:", err);
+  }
+
+  
+  res.status(201).json(new ApiResponse(201, log, "Log created successfully"));
 });
 
 

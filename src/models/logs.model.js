@@ -8,11 +8,15 @@ export async function createLogsTable() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS logs (
         id BIGSERIAL PRIMARY KEY,
+         user_id BIGINT,
         message TEXT NOT NULL,
         level VARCHAR(20) NOT NULL CHECK (level IN ('info','warning','error','critical')),
         source VARCHAR(100),
         status VARCHAR(20) NOT NULL DEFAULT 'new' CHECK (status IN ('new','classified','critical','resolved')),
         metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+        category VARCHAR(50),
+        severity INTEGER,
+        alert_triggered boolean DEFAULT false,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
