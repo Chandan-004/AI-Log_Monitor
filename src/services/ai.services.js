@@ -40,7 +40,7 @@ export async function analyzeLog(message) {
     }
 
   } catch (err) {
-    console.warn("⚠️ AI service failed, using fallback rule-based classifyLog:", err.message);
+    console.warn("AI service failed, using fallback rule-based classifyLog:", err.message);
 
     
     const ruleResult = await classifyLog({ level: "error", message });
