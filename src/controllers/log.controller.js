@@ -7,7 +7,7 @@ import { sendAlert } from "../services/alert.services.js";
 
 
 export const createLog = asyncHandler(async (req, res) => {
-  // Get logged-in userId from JWT
+  
   const userId = req.user?.id; 
   const { message, level, source = null, metadata = {} } = req.body;
 
@@ -20,9 +20,9 @@ export const createLog = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid log level");
   }
 
-  // Step 1: Insert initial log
+  
   const log = await logQueries.createLog({
-    userId, // from JWT
+    userId, 
     message,
     level,
     source,
@@ -30,18 +30,18 @@ export const createLog = asyncHandler(async (req, res) => {
   });
 
   try {
-    // Step 2: Analyze log using AI
+    
     const aiResult = await analyzeLog(message);
 
-    // Step 3: Update log with AI results safely
+    
     await logQueries.updateLog(log.id, {
       category: aiResult.category,
       severity: aiResult.severity,
       alert_triggered: aiResult.severity >= 7,
-      metadata: { ...metadata, ...aiResult.metadata } // never null
+      metadata: { ...metadata, ...aiResult.metadata } 
     });
 
-    // Step 4: Trigger alert if necessary
+    
     if (aiResult.severity >= 7 || level === "critical") {
       await sendAlert(log);
     }
