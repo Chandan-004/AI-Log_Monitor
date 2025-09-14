@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import * as logQueries from "../queries/log.queries.js";
 import { analyzeLog } from "../services/ai.services.js";
 import { sendAlert } from "../services/alert.services.js";
+import { createSystemLog } from "../services/systemLogger.services.js";
 
 
 export const createLog = asyncHandler(async (req, res) => {
@@ -39,6 +40,12 @@ export const createLog = asyncHandler(async (req, res) => {
       severity: aiResult.severity,
       alert_triggered: aiResult.severity >= 7,
       metadata: { ...metadata, ...aiResult.metadata } 
+    });
+
+    await createSystemLog({ 
+      message: `Classification run for log_id=${log.id} resulted in severity=${aiResult.severity} and category=${aiResult.category}`, 
+      metadata: aiResult.metadata,
+      severity: aiResult.severity  // optional: adjust level based on severity
     });
 
     
