@@ -2,61 +2,61 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import * as logQueries from "../queries/log.queries.js";
-import { analyzeLog } from "../services/ai.services.js";
+import { classifyLogMessage } from "../utils/aiclassifier.utils.js";
 import { sendAlert } from "../services/alert.services.js";
 import { createSystemLog } from "../services/systemLogger.services.js";
 
 
 export const createLog = asyncHandler(async (req, res) => {
-  
-  const userId = req.user?.id; 
-  const { message, level, source = null, metadata = {} } = req.body;
+    const userId = req.user?.id;
+    const { message, level, source = null, metadata = {} } = req.body;
 
-  if (!message || !level) {
-    throw new ApiError(400, "Message and Level are required");
-  }
-
-  const allowedLevels = ["info", "warning", "error", "critical"];
-  if (!allowedLevels.includes(level)) {
-    throw new ApiError(400, "Invalid log level");
-  }
-
-  
-  const log = await logQueries.createLog({
-    userId, 
-    message,
-    level,
-    source,
-    metadata
-  });
-
-  try {
-    
-    const aiResult = await analyzeLog(message);
-
-    
-    await logQueries.updateLog(log.id, {
-      category: aiResult.category,
-      severity: aiResult.severity,
-      alert_triggered: aiResult.severity >= 7,
-      metadata: { ...metadata, ...aiResult.metadata } 
-    });
-
-    await createSystemLog({ 
-      message: `Classification run for log_id=${log.id} resulted in severity=${aiResult.severity} and category=${aiResult.category}`, 
-      metadata: aiResult.metadata,
-      severity: aiResult.severity  // optional: adjust level based on severity
-    });
-
-    
-    if (aiResult.severity >= 7 || level === "critical") {
-      await sendAlert(log);
+    if (!message || !level) {
+        throw new ApiError(400, "Message and Level are required");
     }
-  } catch (err) {
-    console.error("AI analysis failed:", err);
-  }
 
-  res.status(201).json(new ApiResponse(201, log, "Log created successfully"));
+    const allowedLevels = ["info", "warning", "error", "critical"];
+    if (!allowedLevels.includes(level)) {
+        throw new ApiError(400, "Invalid log level");
+    }
+
+    // Step 1: Create initial log
+    const log = await logQueries.createLog({
+        userId,
+        message,
+        level,
+        source,
+        metadata
+    });
+
+    try {
+        // Step 2: Call AI Classifier Helper
+        const aiResult = await classifyLogMessage(message);
+
+        // Step 3: Update log with AI result
+        await logQueries.updateLog(log.id, {
+            category: aiResult.category,
+            severity: aiResult.severity,
+            alert_triggered: aiResult.severity >= 7,
+            metadata: { ...metadata, ...aiResult.metadata }
+        });
+
+        // ✅ Step 4: Self Logging
+        await createSystemLog({
+            message: `Classification run for log_id=${log.id} resulted in severity=${aiResult.severity} and category=${aiResult.category}`,
+            metadata: aiResult.metadata
+        });
+
+        // Step 5: Trigger alert if necessary
+        if (aiResult.severity >= 7 || level === "critical") {
+            await sendAlert(log);
+        }
+
+    } catch (err) {
+        console.error("AI analysis failed:", err);
+    }
+
+    res.status(201).json(new ApiResponse(201, log, "Log created successfully"));
 });
 
 
