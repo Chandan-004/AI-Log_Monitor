@@ -30,14 +30,14 @@ export const createLog = asyncHandler(async (req, res) => {
     });
 
     try {
-        // Step 2: Call AI Classifier Helper
+        // Step 2: Call GPT-5 Nano AI Classifier
         const aiResult = await classifyLogMessage(message);
 
-        // Step 3: Update log with AI result
+        // Step 3: Update log with AI result (minimal change)
         await logQueries.updateLog(log.id, {
-            category: aiResult.category,
-            severity: aiResult.severity,
-            alert_triggered: aiResult.severity >= 7,
+            category: aiResult.category || "Unclassified",
+            severity: aiResult.severity || 1,
+            alert_triggered: (aiResult.severity || 1) >= 7,
             metadata: { ...metadata, ...aiResult.metadata }
         });
 
@@ -48,7 +48,7 @@ export const createLog = asyncHandler(async (req, res) => {
         });
 
         // Step 5: Trigger alert if necessary
-        if (aiResult.severity >= 7 || level === "critical") {
+        if ((aiResult.severity || 1) >= 7 || level === "critical") {
             await sendAlert(log);
         }
 
@@ -58,7 +58,6 @@ export const createLog = asyncHandler(async (req, res) => {
 
     res.status(201).json(new ApiResponse(201, log, "Log created successfully"));
 });
-
 
 export const getLogs = asyncHandler(async (req, res) => {
   const { level, source, limit = 50, offset = 0 } = req.query;
