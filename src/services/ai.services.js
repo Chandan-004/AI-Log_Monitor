@@ -1,13 +1,6 @@
-import fetch from "node-fetch";
-import { classifyLog } from "./ruleBasedAI.js"; 
-import dotenv from "dotenv";
-dotenv.config();
-
-const AI_API_KEY = process.env.AI_API_KEY;
-const AI_API_URL = process.env.AI_API_URL || "https://api.openai.com/v1/completions";
-
-
 export async function analyzeLog(message) {
+  let aiResult = null;
+
   try {
     const response = await fetch(AI_API_URL, {
       method: "POST",
@@ -16,36 +9,41 @@ export async function analyzeLog(message) {
         "Authorization": `Bearer ${AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "text-davinci-003",
-        prompt: `Classify this log and give severity (1-10):\n\n${message}\n\nReturn JSON with keys category and severity.`,
+        model: "gpt-5-nano",
+        messages: [
+          { role: "system", content: "Classify logs: category + severity (1-10), strict JSON only." },
+          { role: "user", content: message }
+        ],
         temperature: 0,
         max_tokens: 60
       }),
     });
 
     const data = await response.json();
-    const text = data.choices?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content?.trim() || "";
 
-    let aiResult;
-    try {
-      aiResult = JSON.parse(text);
-    } catch {
-      aiResult = null;
-    }
-
-    if (aiResult && aiResult.category && aiResult.severity) {
-      return { category: aiResult.category, severity: aiResult.severity };
-    } else {
-      throw new Error("Invalid AI response");
-    }
+    // Regex extraction of JSON
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) aiResult = JSON.parse(match[0]);
 
   } catch (err) {
-    console.warn("AI service failed, using fallback rule-based classifyLog:", err.message);
+    console.warn("AI failed, using rule-based fallback:", err.message);
+  }
 
-    
+  // Fallback if AI fails
+  if (!aiResult || !aiResult.category || !aiResult.severity) {
     const ruleResult = await classifyLog({ level: "error", message });
     const severity = ruleResult.status === "critical" ? 9 : 3;
-
-    return { category: ruleResult.ai_label, severity };
+    aiResult = { category: ruleResult.ai_label, severity };
   }
+
+  // Full log object ready for email alert
+  return {
+    level: aiResult.severity >= 7 ? "critical" : "warning",
+    message,
+    category: aiResult.category,
+    severity: aiResult.severity,
+    source: "system",
+    metadata: {}
+  };
 }
