@@ -1,3 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+
+const AI_API_KEY = process.env.OPENAI_API_KEY;
+const AI_API_URL = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
+
 export async function analyzeLog(message) {
   let aiResult = null;
 
