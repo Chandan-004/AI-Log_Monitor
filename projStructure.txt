@@ -46,5 +46,7 @@ myapp/
 ├── public/                 # Static files (optional, for frontend/dashboard)
 │
 ├── .env                    # Environment variables
+├── projStruture.txt                    
+├── dfd.png             
 ├── package.json
 └── README.md
