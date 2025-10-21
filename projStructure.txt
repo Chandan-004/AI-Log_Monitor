@@ -10,7 +10,7 @@ myapp/
 │   ├── models/             # Database models
 │   │   ├── log.model.js
 │   │   └── user.model.js
-│   ├── queries/             # Database models
+│   ├── queries/             
 │   │   ├── log.queries.js
 │   │
 │   ├── routes/             # API route definitions
