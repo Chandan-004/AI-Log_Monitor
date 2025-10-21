@@ -1,0 +1,50 @@
+myapp/
+│
+├── src/
+│   ├── config/        
+│   │   ├── db.config.js
+│   ├── controllers/        # Handles API logic for logs and users
+│   │   ├── log.controller.js
+│   │   └── user.controller.js
+│   │
+│   ├── models/             # Database models
+│   │   ├── log.model.js
+│   │   └── user.model.js
+│   ├── queries/             # Database models
+│   │   ├── log.queries.js
+│   │
+│   ├── routes/             # API route definitions
+│   │   ├── log.routes.js
+│   │   └── user.routes.js
+│   │
+│   ├── middleware/         # Authentication, validation, rate limiting
+│   │   ├── auth.middleware.js
+│   │   └── rltr.middleware.js
+│   │   └── logs.middleware.js
+│   │
+│   ├── services/              
+│   │   ├── ai.services.js
+│   │   └── alert.serices.js
+│   │   └── ruleBasedAI.js
+│   │   └── asyncHandler.js
+│   │   └── systemLogger.services.js
+│   │
+│   ├── utils/              
+│   │   ├── aiclassifier.utils.js
+│   │   └── ApiError.js
+│   │   └── ApiResponse.js
+│   │   └── asyncHandler.js
+│   │   └── systemLogger.services.js
+│   │
+│   ├── app.js              # Express app initialization
+│   └── constants.js           # Server start
+│   └── index.js           # LocalHost Server start
+│
+├── config/                 # Configuration files (DB, environment, etc.)
+│   └── dbConfig.js
+│
+├── public/                 # Static files (optional, for frontend/dashboard)
+│
+├── .env                    # Environment variables
+├── package.json
+└── README.md
