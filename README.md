@@ -22,12 +22,17 @@ Node.js | Express | PostgreSQL | OpenAI API | SMTP Notifications
 ---
 
 ## Project Structure 
-The complete project structure is available in [PROJECT_STRUCTURE](./projStructure.txt).
+The complete project structure is available in [PROJECT_STRUCTURE](./assets/projStructure.txt).
 
-----
+---
+
+## Project Screenshot / Output 
+The complete project running screenshot is available in [PROJECT_OUTPUT](./assets/output.png).
+
+---
 
 ## Project Data Flow Diagram 
-The complete project dfd is available in [PROJECT_DFD](./dfd.png).
+The complete project dfd is available in [PROJECT_DFD](./assets/dfd.png).
 
 ---
 
