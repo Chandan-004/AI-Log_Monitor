@@ -58,17 +58,17 @@ Configure Environment Variables:Create a file named .env in the root directory a
 PORT=3000
 JWT_SECRET=your_strong_jwt_secret
 
-# PostgreSQL Database
+### PostgreSQL Database
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=ai_log_db
 
-# AI Service
+### AI Service
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# SMTP for Notifications
+### SMTP for Notifications
 SMTP_HOST=smtp.example.com
 SMTP_USER=alert@example.com
 SMTP_PASS=smtp_password
@@ -76,7 +76,7 @@ ADMIN_EMAIL=admin@yourcompany.com
 Database Setup and Migration:Create your PostgreSQL database (ai_log_db) and run any necessary migrations (assuming you use a tool like Sequelize or Knex):Bash# Example command to run database migrations
 npx [DB_MIGRATION_CLI] migrate
 Running the SystemStart the application server:Bashnpm start
-# or npm run dev (if using nodemon)
+### or npm run dev (if using nodemon)
 💻 Usage: Submitting a LogThe primary function is to accept and process raw log data via the API. Once authenticated (using a JWT in the header), send a log using a simple POST request:EndpointMethodDescription/api/logsPOSTSubmits a raw log for AI classification and storage.Example using cURL:Bashcurl -X POST http://localhost:3000/api/logs \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer <YOUR_JWT_TOKEN>" \
