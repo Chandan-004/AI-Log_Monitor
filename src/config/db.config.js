@@ -10,6 +10,14 @@ const pool = new Pool(DB_CONFIG);
 
 const connectDB = async () => {
     try {
+        console.log("Attempting to connect to database...");
+        if (DB_CONFIG.connectionString) {
+            const maskedUrl = DB_CONFIG.connectionString.replace(/:[^:@]+@/, ':***@');
+            console.log(`Using connection string: ${maskedUrl}`);
+        } else {
+            console.log(`Using config: host=${DB_CONFIG.host}, user=${DB_CONFIG.user}, db=${DB_CONFIG.database}`);
+        }
+
         await pool.query('SELECT NOW()');
         console.log(' PostgreSQL connected');
     } catch (err) {
