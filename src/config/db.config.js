@@ -13,7 +13,8 @@ const connectDB = async () => {
         await pool.query('SELECT NOW()');
         console.log(' PostgreSQL connected');
     } catch (err) {
-        throw new ApiError(500, "Database Connection failed")
+        console.error("Database Connection Error:", err);
+        throw new ApiError(500, `Database Connection failed: ${err.message}`);
     }
 };
 
