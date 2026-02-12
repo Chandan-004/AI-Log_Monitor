@@ -6,20 +6,19 @@ import { pool, connectDB } from "./config/db.config.js";
 import { createUsersTable } from "./models/user.model.js";
 import { createLogsTable } from "./models/logs.model.js";
 
-connectDB()
-createUsersTable()
-createLogsTable()
+// Async IIFE to handle startup
+(async () => {
+    try {
+        await connectDB();
+        await createUsersTable();
+        await createLogsTable();
 
-import usersRouter from "./routes/user.routes.js";
-import logsRouter from "./routes/log.routes.js";
-
-// Root route is handled by express.static("public") in app.js
-
-
-app.use('/api/v1/users', usersRouter);
-app.use('/api/v1/logs', logsRouter)
-
-
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error("Failed to start server due to DB error:", err);
+        // process.exit(1); // Optional: decide if you want to crash or keep trying
+    }
+})();
