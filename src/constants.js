@@ -4,7 +4,7 @@ dotenv.config();
 export const DB_CONFIG = process.env.DATABASE_URL
   ? {
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ...(process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1') ? {} : { ssl: { rejectUnauthorized: false } })
   }
   : {
     user: process.env.DB_USER,

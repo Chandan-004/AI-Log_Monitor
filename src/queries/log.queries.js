@@ -55,3 +55,8 @@ export const deleteLog = async (id) => {
   const result = await pool.query(`DELETE FROM logs WHERE id = $1;`, [id]);
   return { success: result.rowCount > 0 };
 };
+
+export const deleteOldLogs = async (days = 30) => {
+  const result = await pool.query(`DELETE FROM logs WHERE created_at < NOW() - INTERVAL '${days} days';`);
+  return { success: true, count: result.rowCount };
+};

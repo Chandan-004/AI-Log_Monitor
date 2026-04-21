@@ -19,6 +19,6 @@ import { createLogsTable } from "./models/logs.model.js";
         });
     } catch (err) {
         console.error("Failed to start server due to DB error:", err);
-        // process.exit(1); // Optional: decide if you want to crash or keep trying
+        process.exit(1);
     }
 })();

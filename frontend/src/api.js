@@ -25,16 +25,22 @@ class ApiService {
             const response = await fetch(url, config);
 
             if (response.status === 401) {
-                // Token expired or invalid
                 console.warn('Unauthorized access. Redirecting to login.');
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                window.location.href = 'login.html';
+                window.location.href = '/login';
                 return null;
             }
 
-            const data = await response.json();
-            if (!response.ok) {
+            const text = await response.text();
+            let data = {};
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                if (!response.ok) throw new Error(`Server returned non-JSON error: ${response.status}`);
+            }
+
+            if (!response.ok || data.success === false) {
                 throw new Error(data.message || 'API Request Failed');
             }
             return data;
@@ -62,4 +68,4 @@ class ApiService {
     }
 }
 
-const api = new ApiService();
+export const api = new ApiService();

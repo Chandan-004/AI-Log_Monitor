@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { pool } from '../config/db.config.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiError } from '../utils/ApiError.js';
 
 dotenv.config();
 
@@ -13,13 +14,12 @@ const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
 const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
 
 
-const registerUser = async (req, res) => {
-    console.log("BODY RECEIVED:", req.body);
+const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
 
     const existing = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
     if (existing.rows.length > 0) {
-        return res.status(400).json(new ApiResponse(400, null, "User already exists"));
+        throw new ApiError(400, "User already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,25 +29,25 @@ const registerUser = async (req, res) => {
         [username, email, hashedPassword]
     );
 
-    res.status(201).json({ user: result.rows[0] });
-};
+    res.status(201).json(new ApiResponse(201, { user: result.rows[0] }, "User registered successfully"));
+});
 
 
-const loginUser = async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     const result = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
     const user = result.rows[0];
-    if (!user) return res.status(400).json(new ApiResponse(400, null, "User Not Found"));
+    if (!user) throw new ApiError(404, "User Not Found");
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json(new ApiResponse(400, null, "Incorrect Password"));
+    if (!isMatch) throw new ApiError(401, "Incorrect Password");
 
     const accessToken = jwt.sign({ id: user.id }, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
     const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
-    res.json({ accessToken, refreshToken });
-};
+    res.status(200).json(new ApiResponse(200, { accessToken, refreshToken }, "Login successful"));
+});
 
 
 const refreshAccessToken = asyncHandler(async (req, res) => {

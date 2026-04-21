@@ -106,3 +106,8 @@ export const deleteLog = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "Log deleted successfully"));
 });
+
+export const purgeOldLogs = asyncHandler(async (req, res) => {
+  const result = await logQueries.deleteOldLogs(30);
+  return res.status(200).json(new ApiResponse(200, result, `${result.count} stale logs purged successfully`));
+});

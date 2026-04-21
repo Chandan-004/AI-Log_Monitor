@@ -6,7 +6,8 @@ import {
   createLog,
   getLogs,
   updateLog,
-  deleteLog
+  deleteLog,
+  purgeOldLogs
 } from "../controllers/log.controller.js";
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/", verifyToken, logrltr, validateLog, createLog);
 router.get("/", verifyToken, getLogs);
+router.delete("/system/purge", verifyToken, purgeOldLogs);
 router.patch("/:id", verifyToken, updateLog);
 router.delete("/:id", verifyToken, deleteLog);
 
