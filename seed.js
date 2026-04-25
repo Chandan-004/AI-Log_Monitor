@@ -2,8 +2,9 @@ import fetch from "node-fetch";
 
 (async () => {
     try {
-        console.log("Creating user admin2@test.com on Port 5000...");
-        await fetch("http://localhost:5000/api/v1/users/register", {
+        const API_URL = process.env.API_URL || "http://localhost:5000";
+        console.log(`Creating user admin2@test.com on ${API_URL}...`);
+        await fetch(`${API_URL}/api/v1/users/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -14,7 +15,7 @@ import fetch from "node-fetch";
         });
 
         console.log("Logging in...");
-        const loginRes = await fetch("http://localhost:5000/api/v1/users/login", {
+        const loginRes = await fetch(`${API_URL}/api/v1/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -33,7 +34,7 @@ import fetch from "node-fetch";
 
         console.log("Logged in! Sending test log to trigger AI...");
 
-        const logRes = await fetch("http://localhost:5000/api/v1/logs", {
+        const logRes = await fetch(`${API_URL}/api/v1/logs`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

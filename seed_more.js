@@ -2,8 +2,9 @@ import fetch from "node-fetch";
 
 (async () => {
     try {
-        console.log("Logging in to get token...");
-        const loginRes = await fetch("http://localhost:5000/api/v1/users/login", {
+        const API_URL = process.env.API_URL || "http://localhost:5000";
+        console.log(`Logging in to get token from ${API_URL}...`);
+        const loginRes = await fetch(`${API_URL}/api/v1/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -32,7 +33,7 @@ import fetch from "node-fetch";
 
         for (const log of logs) {
             console.log(`Sending [${log.level.toUpperCase()}] log: ${log.source}...`);
-            await fetch("http://localhost:5000/api/v1/logs", {
+            await fetch(`${API_URL}/api/v1/logs`, {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
