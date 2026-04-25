@@ -1,5 +1,5 @@
 class ApiService {
-    constructor(baseUrl = '/api/v1') {
+    constructor(baseUrl = import.meta.env.VITE_API_URL || '/api/v1') {
         this.baseUrl = baseUrl;
     }
 
